@@ -1,12 +1,11 @@
 import React, { Component } from "react";
-import {Link} from "react-router-dom";
-import Jumbotron from "../../components/Jumbotron";
 import DeleteBtn from "../../components/DeleteBtn";
 import axios from "axios";
 import { Col, Row, Container } from "../../components/Grid";
 import { List, ListItem } from "../../components/List";
 import { Input, TextArea, FormBtn } from "../../components/Form";
 import {Redirect} from "react-router-dom"
+import Cookies from 'js-cookie';
 
 class Books extends Component {
   // Setting our component's initial state
@@ -14,6 +13,9 @@ class Books extends Component {
     super(props)
     let logIn = false;
     if(this.props.location.state && this.props.location.state.loggedIn){
+      logIn = true;
+    }
+    else if(Cookies.get('JWT')){
       logIn = true;
     }
     this.state = {
@@ -33,7 +35,10 @@ class Books extends Component {
 
   // Loads all books  and sets them to this.state.books
   loadBooks = () => {
-    const accessString = localStorage.getItem('JWT');
+    let accessString = localStorage.getItem('JWT');
+    if(accessString == null){
+      accessString = Cookies.get('JWT');
+    }
     axios.get("/api/books",{headers: { Authorization: `JWT ${accessString}` }})
       .then(res =>
         this.setState({ loggedIn: true, books: res.data, title: "", author: "", synopsis: "" })
@@ -44,7 +49,7 @@ class Books extends Component {
   // Deletes a book from the database with a given id, then reloads books from the db
   deleteBook = id => {
     const accessString = localStorage.getItem('JWT');
-    axios.delete("/api/books/" + id,{headers: { Authorization: `JWT ${accessString}` }})
+    axios.delete("/api/books/" + id, {headers: { Authorization: `JWT ${accessString}` }})
       .then(res => this.loadBooks())
       .catch(err => console.log(err));
   };
@@ -75,7 +80,8 @@ class Books extends Component {
 
   logout = () =>{
     this.setState({loggedIn:false})
-    localStorage.clear('JWT')
+    localStorage.clear('JWT');
+    Cookies.remove('JWT');
   }
 
   render() {

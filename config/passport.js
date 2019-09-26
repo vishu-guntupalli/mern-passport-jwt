@@ -1,7 +1,7 @@
 const bcrypt = require('bcrypt');
 
 const BCRYPT_SALT_ROUNDS = 12;
-
+const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const User = require('../models/user');
@@ -75,5 +75,40 @@ passport.use(
     },
   ),
 );
+
+passport.use("google",
+  new GoogleStrategy(
+    {
+      clientID: '285849611014-7seaqka9h71idj0oapo4u9qo4h7gq8h5.apps.googleusercontent.com',
+      clientSecret: 'ofgx5sd-yQwupeaVUPjC6fPS',
+      callbackURL: "/auth/google/callback",
+      proxy: true
+    },
+    (accessToken, refreshToken, profile, done) => {
+      console.log(profile);
+      console.log("done"+ done)
+      User.findOne({ googleId: profile.id }).then(existingUser => {
+        if (existingUser) {
+          console.log("found user");
+          return done(null, existingUser)
+        } else {
+          console.log("creating a new user");
+          new User({
+            googleId: profile.id,
+            username: profile.displayName,
+            email: profile.emails[0].value
+          })
+            .save()
+            .then((user)=>{
+              console.log("done");
+              return done(null, user)
+            });
+        }
+      });
+    }
+  )
+);
+
+
 
 
