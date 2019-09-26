@@ -79,8 +79,8 @@ passport.use(
 passport.use("google",
   new GoogleStrategy(
     {
-      clientID: '285849611014-7seaqka9h71idj0oapo4u9qo4h7gq8h5.apps.googleusercontent.com',
-      clientSecret: 'ofgx5sd-yQwupeaVUPjC6fPS',
+      clientID: 'your-client-id',
+      clientSecret: 'your-secret-key',
       callbackURL: "/auth/google/callback",
       proxy: true
     },
